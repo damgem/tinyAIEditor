@@ -1,19 +1,23 @@
 import { z } from 'zod'
 import { publicProcedure, router } from '../trpc'
 
+import { chain } from '~/server/llm/chains'
+
 export const appRouter = router({
-  hello: publicProcedure
+  llm: publicProcedure
     .input(
       z.object({
-        text: z.string().nullish()
+        instruction: z.string(),
+        targetText: z.string(),
+        context: z.string()
       })
     )
-    .query(({ input }) => {
-      return {
-        greeting: `hello ${input?.text ?? 'world'}`,
-        time: new Date()
+    .query(
+      async ({ input }) => {
+        const result = await chain.call(input)
+        return { output: result.text as string }
       }
-    })
+    )
 })
 
 // export type definition of API
