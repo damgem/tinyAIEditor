@@ -30,6 +30,7 @@ const ensureAllTextareaHeightsAreDynamic = () => {
     }
   })
 }
+
 const focusFirstTextarea = () => {
   const textarea = document.querySelector('.tox-dialog .tox-textarea')
   if (textarea instanceof HTMLElement) {
@@ -37,7 +38,11 @@ const focusFirstTextarea = () => {
   }
 }
 
-const openReviewDialog = (editor: Editor, dialogApi: DialogApi, generatedText: string) => {
+const openReviewDialog = (editor: Editor, dialogApi: DialogApi, generationInput: { instruction: string, targetText: string, context: string }, generatedText: string, llmGenerationCall: LLMGenerationCall) => {
+  let generatedTextIndex = 0
+  let generatedTexts = [ generatedText ]
+  const formatGeneratedTextLabel = () => `Generated text (${generatedTextIndex + 1} / ${generatedTexts.length})`
+
   dialogApi.redial({
     title: 'Review Generation',
     body: {
@@ -46,14 +51,33 @@ const openReviewDialog = (editor: Editor, dialogApi: DialogApi, generatedText: s
         {
           type: 'textarea',
           name: 'generatedText',
-          label: 'Generated text'
+          label: formatGeneratedTextLabel()
         }
       ]
     },
-    initialData: { generatedText },
-    buttons: [{ type: 'submit', text: 'Accept' }],
+    initialData: { generatedText: generatedTexts[generatedTextIndex] },
+    buttons: [
+      {
+        type: 'custom',
+        name: 'previousGeneration',
+        icon: 'arrow-left',
+        text: 'see previous generation',
+        enabled: false,
+      },
+      {
+        type: 'custom',
+        name: 'nextGeneration',
+        text: 'see next generation',
+        icon: 'arrow-right',
+      },
+      {
+        type: 'submit',
+        text: 'Accept',
+        buttonType: 'primary',
+      }
+    ],
     onSubmit: (dialogApi) => {
-      let generatedHTML = markdown2html(generatedText)
+      let generatedHTML = markdown2html(generatedTexts[generatedTextIndex])
 
       if (generatedHTML.startsWith('<p>') && generatedHTML.endsWith('</p>')) {
         generatedHTML = generatedHTML.substring(3, generatedHTML.length - 4)
@@ -61,6 +85,27 @@ const openReviewDialog = (editor: Editor, dialogApi: DialogApi, generatedText: s
 
       editor.execCommand('mceInsertContent', false, generatedHTML)
       dialogApi.close()
+    },
+    onAction: async (dialogApi, details) => {
+      if (details.name === 'previousGeneration') {
+        generatedTextIndex -= 1
+      } else if (details.name === 'nextGeneration') {
+        generatedTextIndex += 1
+        if(generatedTextIndex >= generatedTexts.length) {
+          dialogApi.block('Generating ...')
+          generatedTexts.push(await llmGenerationCall(generationInput))
+          dialogApi.unblock()
+        }
+      }
+
+      dialogApi.setData({ generatedText: generatedTexts[generatedTextIndex] })
+      dialogApi.setEnabled('previousGeneration', generatedTextIndex > 0)
+      dialogApi.setEnabled('nextGeneration', generatedTextIndex < generatedTexts.length) // ?
+      
+      const label = document.querySelector('.tox-form .tox-label')
+      if(label instanceof HTMLElement) {
+        label.innerText = formatGeneratedTextLabel()
+      }
     }
   })
   ensureAllTextareaHeightsAreDynamic()
@@ -108,7 +153,7 @@ export const useAiButton = (llmGenerationCall: LLMGenerationCall) => {
         ]
       },
       initialData,
-      buttons: [{ type: 'submit', text: 'Prompt', name: 'submitButton' }],
+      buttons: [{ type: 'submit', text: 'Prompt', name: 'submitButton', buttonType: 'primary' }],
       onSubmit: async (dialogApi) => {
         const dialogData = dialogApi.getData()
 
@@ -116,7 +161,7 @@ export const useAiButton = (llmGenerationCall: LLMGenerationCall) => {
         const generatedText = await llmGenerationCall(dialogData)
         dialogApi.unblock()
 
-        openReviewDialog(editor, dialogApi as any, generatedText)
+        openReviewDialog(editor, dialogApi as any, dialogData, generatedText, llmGenerationCall)
       }
     })
 
