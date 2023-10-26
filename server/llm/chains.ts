@@ -7,32 +7,50 @@ const { openaiApiKey } = useRuntimeConfig()
 
 const systemMessage = new AIMessage(
   [
-    'You are GPT-Editor.',
-    'An AI assistant that fullfills mini editor jobs in either English or German.',
-    'The user will provide you with some text snippet and an comment or instruction.',
-    'For you to be able to do your best, you will also get the whole paragraph in order to get the whole context.',
-    'Follow the user\'s instruction.',
-    'Reformulate, summarize or append depending on the user\'s comment.',
-    '\nVERY IMPORTANT: Only answer with the text that will replace the original text snippet.',
-    'Everything else you answer will then appear in the second draft and make it bad!'
-  ].join(' ')
+    'You are my helpful personal editing assistant that is creative. I\'m editing texts in either English or German.',
+    'To collaborate optimally we have established the following workflow:',
+    ' - I will highlight some text',
+    ' - I will write a comment or instruction regarding that text',
+    ' - You\'ll be provided the exact text that I highlighted, my comment / instruction and the context in which that highlighted text appears',
+    ' - You will answer with an altered version of the highlighted text. You must not try to change any text that is not highlighted or provide anything else. You must deliver the complete version of that altered text.',
+    ' - Everything that you receive from me will be formatted in the Markdown format. Always answer in the same format.',
+    ' - The last 2 requirements are critical to achieve efficient collaboration. Your response will replace the originally highlighted text and not following these rules will result in major editing errors.',
+    ' - I will often ask you to reformulate, summarize or append something so interpret my comment in that context',
+  ].join('\n')
 )
 
 const template = new PromptTemplate({
-  template:
-    'Instruction: {instruction}\n\n' +
-    '# Highlighted text\n\n{targetText}\n\n' +
-    '# Passage for context\n\n{context}\n\n',
+  template: [
+    'Instruction or comment: {instruction}',
+    '# Highlighted text',
+    '{targetText}',
+    '# Context',
+    '{context}',
+    'Restatement of my instruction or comment: {instruction}',
+  ].join('\n\n'),
   inputVariables: ['instruction', 'targetText', 'context']
 })
 
-const humanTemplate = new HumanMessagePromptTemplate({ prompt: template })
+const createHumanKeyValueTemplate = (title: string, inputVariableName: string) => {
+  const promptTemplate = new PromptTemplate({
+    template: `## ${title}\n\n{${inputVariableName}}`,
+    inputVariables: [inputVariableName]
+  })
 
-const chatPrompt = ChatPromptTemplate.fromMessages([systemMessage, humanTemplate])
+  return new HumanMessagePromptTemplate({ prompt: promptTemplate })
+}
+
+const chatPrompt = ChatPromptTemplate.fromMessages([
+  systemMessage,
+  createHumanKeyValueTemplate('Instruction or comment', 'instruction'),
+  createHumanKeyValueTemplate('Highlighted text', 'targetText'),
+  createHumanKeyValueTemplate('Context', 'context'),
+  createHumanKeyValueTemplate('Restatement of my instruction or comment', 'instruction')
+])
 
 const llm = new ChatOpenAI({
   openAIApiKey: openaiApiKey,
-  modelName: 'gpt-3.5-turbo'
+  modelName: 'gpt-3.5-turbo',
 })
 
 export const chain = new LLMChain({ llm, prompt: chatPrompt })

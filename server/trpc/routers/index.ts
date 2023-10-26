@@ -24,7 +24,8 @@ export const appRouter = router({
         }
 
         const result = await chain.call(input.data)
-        return { output: result.text as string }
+        const resultText = result.text as string
+        return resultText.split('\n').slice(2).join('\n')
       }
     )
 })

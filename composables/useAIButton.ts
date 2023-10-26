@@ -70,8 +70,8 @@ const openReviewDialog = (editor: Editor, dialogApi: DialogApi, generatedText: s
 export const useAiButton = (llmGenerationCall: LLMGenerationCall) => {
   const onButtonClick = (editor: Editor) => {
     const initialData = {
-      targetText: html2markdown(editor.selection.getContent()),
-      context: html2markdown(editor.getContent()),
+      targetText: html2markdown(editor.selection.getContent()).trim(),
+      context: html2markdown(editor.getContent()).trim(),
       instruction: ''
     } satisfies DialogData
 

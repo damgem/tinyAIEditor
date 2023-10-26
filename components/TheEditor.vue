@@ -12,11 +12,12 @@ const { markdown2html } = useConverters()
 const config = {
   height: '700',
   setup: () => {
-    useTinymce().PluginManager.add('ai', aiButton)
+    const tinymce = useTinymce()
+    tinymce.PluginManager.add('ai', aiButton)
   }
 }
 
-const initialValue = markdown2html('# Welcome to TinyAIEditor!\n\nThis is an AI extension on top of the open source [TinyMCE](https://github.com/tinymce/tinymce) editor that enables an AI empowered editing workflow.\n\n**To get started:**\n- Highlight the text you wish to edit\n- Click the `AI Editor` button on the toolbar above ↑ or use the shortcut `⌘` + `E`\n- Enter your instruction in the dialog that opens and then click `Generate`\n- Wait for your generation to finish and review it\n- Click `Accept` to insert the initally highlighted text with the generated text\n\n_Try it on this document right away!_')
+const initialValue = markdown2html("# Hey there, welcome to TinyAIEditor!\n\nThis awesome AI extension is built on top of the open source [TinyMCE](<https://github.com/tinymce/tinymce>) editor, and it's all about making your editing workflow way more chill and casual.\n\n**Ready to get started? Here's what you gotta do:**\n\n- Highlight the text you wanna edit, no pressure!\n- Look for the `AI Editor` button on the toolbar above ↑ or simply hit `⌘` \+ `E` if you prefer shortcuts\n- When the dialog pops up, just drop in your instruction and hit `Generate`\n- Have some patience while the AI works its magic, and maybe give it a cool and artistic touch yourself!\n- Feeling good about it? Click `Accept` to seamlessly insert the original highlighted text with the generated version\n\nWhy not give it a whirl on this document right away? Let's make editing a breeze! ✨🚀")
 </script>
 
 <template>
@@ -24,7 +25,7 @@ const initialValue = markdown2html('# Welcome to TinyAIEditor!\n\nThis is an AI 
     :api-key="tinymceApiKey"
     :initial-value="initialValue"
     plugins="wordcount ai lists"
-    toolbar="undo redo | blocks | bold italic | outdent indent | numlist bullist | aiButton"
+    toolbar="undo redo | blocks | bold italic | aiButton | numlist bullist | outdent indent"
     :init="config"
   />
 </template>
