@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import Editor from '@tinymce/tinymce-vue'
 
+import { getPassword } from '~/composables/usePassword'
+
 const { tinymceApiKey } = useRuntimeConfig().public
 
 const { $client } = useNuxtApp()
-const aiButton = useAiButton(async data => (await $client.llm.query(data)).output)
+const aiButton = useAiButton(async data => (await $client.llm.query({ data, password: getPassword() })).output)
 
 const { markdown2html } = useConverters()
 
