@@ -1,4 +1,7 @@
 <script setup lang="ts">
+useHead({
+  title: 'TinyAIEditor'
+})
 
 const { setPassword, getPassword } = usePassword()
 const password = ref('')
