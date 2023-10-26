@@ -1,7 +1,7 @@
-import { Converter } from 'showdown'
+import showdown from 'showdown'
 
 export const useConverters = () => {
-  const converter = new Converter()
+  const converter = new showdown.Converter()
 
   return {
     html2markdown: (html: string) => {
