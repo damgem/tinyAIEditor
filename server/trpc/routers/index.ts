@@ -20,7 +20,7 @@ export const appRouter = router({
     .query(
       async ({ input }) => {
         if (input.password !== password) {
-          return { output: 'ERROR: THE PASSWORD IS WRONG' }
+          return 'ERROR: THE PASSWORD IS WRONG'
         }
 
         const result = await chain.call(input.data)

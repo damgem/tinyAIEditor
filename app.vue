@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { setPassword } from './composables/usePassword'
 
+const { setPassword, getPassword } = usePassword()
 const password = ref('')
 
-watchEffect(() => setPassword(password.value))
+onMounted(() => {
+  password.value = getPassword()
+  watchEffect(() => setPassword(password.value), {})
+})
 </script>
 <template>
   <div>

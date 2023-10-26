@@ -1,7 +1,6 @@
-let password = ''
+export const usePassword = () => {
+  const setPassword = (pw: string) => localStorage.setItem('password', pw)
+  const getPassword = () => localStorage?.getItem('password') || ''
 
-export const setPassword = (pw: string) => {
-  password = pw
+  return { setPassword, getPassword }
 }
-
-export const getPassword = () => password
