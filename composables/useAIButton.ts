@@ -127,7 +127,7 @@ export const useAiButton = (llmGenerationCall: LLMGenerationCall) => {
         items: [
           {
             type: 'htmlpanel',
-            html: '<p style="font-size: 0.8rem; color: grey">ⓘ Press ⌘ + E while the text editor is focused for a shortcut to this dialog</p><br>'
+            html: '<p style="font-size: 0.8rem; color: grey">ⓘ Press ⌘ + E while the text editor is focused for a shortcut to this dialog</p><hr>'
           },
           {
             type: 'textarea',
