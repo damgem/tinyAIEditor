@@ -5,7 +5,10 @@ const { tinymceApiKey } = useRuntimeConfig().public
 const { getPassword } = usePassword()
 const { $client } = useNuxtApp()
 
-const aiButton = useAiButton(data => $client.llm.query({ data, password: getPassword() }))
+const aiButton = useAiButton(
+  data => $client.llm.query({ data, password: getPassword() }),
+  (data, numGenerations: number) => $client.llmMultiple.query({ data, numGenerations, password: getPassword() })
+)
 
 const { markdown2html } = useConverters()
 
