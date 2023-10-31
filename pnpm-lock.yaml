@@ -37,6 +37,9 @@ devDependencies:
   '@bg-dev/nuxt-naiveui':
     specifier: ^1.5.1
     version: 1.5.2(vue@3.3.6)
+  '@ephox/bridge':
+    specifier: ^4.6.0
+    version: 4.6.0
   '@nuxt/devtools':
     specifier: ^1.0.0
     version: 1.0.0(nuxt@3.8.0)(vite@4.5.0)
@@ -514,6 +517,31 @@ packages:
 
   /@emotion/hash@0.8.0:
     resolution: {integrity: sha512-kBJtf7PH6aWwZ6fka3zQ0p6SBYzx4fl1LoZXE2RrnYST9Xljm7WfKJrU4g/Xr3Beg72MLrp1AWNUmuYJTL7Cow==}
+    dev: true
+
+  /@ephox/boulder@7.1.5:
+    resolution: {integrity: sha512-ucQPiTMD4pkHcP/9E5DK0hDg02cGqgPiD7AZMEbeHR4ZEz30nO4cyvDMiCOyeSNPUGpEqPZqiWB1IZM3IillvA==}
+    dependencies:
+      '@ephox/katamari': 9.1.5
+    dev: true
+
+  /@ephox/bridge@4.6.0:
+    resolution: {integrity: sha512-6c6wKB0Gf0Plx2aJ1tvwN/fFUPxBAk7d1iMTbl7wWedtKASCI8CZvaK5oUUyuB16QbFjixtrqb77jwoi7v6Cmg==}
+    dependencies:
+      '@ephox/boulder': 7.1.5
+      '@ephox/katamari': 9.1.5
+    dev: true
+
+  /@ephox/dispute@1.0.14:
+    resolution: {integrity: sha512-cl8hu6u8FDIJ0Ofmp9PzMWuby7mNXylcbr5yrsQ7MMOVKXTTBKj93ZWGmPFqKBTbWdeMji16fVRLxYqCp7FInA==}
+    dependencies:
+      tslib: 2.6.2
+    dev: true
+
+  /@ephox/katamari@9.1.5:
+    resolution: {integrity: sha512-6jvkbx/u2Sk6JOeUVJKkfBytni3FUqLSh86qEgs4xZODN+b+Qwf2g6ypLnbejh7WBvYtYHjUxlbB/5fGBLk2PQ==}
+    dependencies:
+      '@ephox/dispute': 1.0.14
     dev: true
 
   /@esbuild/android-arm64@0.18.20:
@@ -8873,6 +8901,10 @@ packages:
       json5: 1.0.2
       minimist: 1.2.8
       strip-bom: 3.0.0
+    dev: true
+
+  /tslib@2.6.2:
+    resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
     dev: true
 
   /tsscmp@1.0.6:

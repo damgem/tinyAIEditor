@@ -6,7 +6,7 @@ import { chain } from '~/server/llm/chains'
 const { password } = useRuntimeConfig()
 
 export const appRouter = router({
-  llm: publicProcedure
+  generate: publicProcedure
     .input(
       z.object({
         data: z.object({
@@ -29,7 +29,7 @@ export const appRouter = router({
         return resultText.split('\n').slice(2).join('\n')
       }
     ),
-  llmMultiple: publicProcedure
+  generateMultiple: publicProcedure
     .input(
       z.object({
         data: z.object({

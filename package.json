@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@bg-dev/nuxt-naiveui": "^1.5.1",
+    "@ephox/bridge": "^4.6.0",
     "@nuxt/devtools": "^1.0.0",
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
     "@nuxtjs/tailwindcss": "^6.8.0",
