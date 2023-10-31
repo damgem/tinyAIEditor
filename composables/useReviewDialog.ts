@@ -1,10 +1,11 @@
 import { Dialog } from '@ephox/bridge'
+import type { LLMGenerationCall, LLMMultipleGenerationCall } from './useChatDialog'
 import { ensureAllTextareasHaveDynamicHeight, focusFirstTextarea } from '~/helpers/domUtils'
 import type { GenerationInputData, Editor } from '~/types'
 
 const { markdown2html } = useConverters()
 
-export const openReviewDialog = (editor: Editor, oldDialogApi: Dialog.DialogInstanceApi<any>, generationInput: GenerationInputData, generatedTexts: string[], llmGenerationCall: LLMGenerationCall) => {
+export const openReviewDialog = (editor: Editor, oldDialogApi: Dialog.DialogInstanceApi<any>, generationInput: GenerationInputData, generatedTexts: string[], llmGenerationCall: LLMGenerationCall, llmMultipleGenerationCall: LLMMultipleGenerationCall, openChatDialog: (editor: Editor, llmGenerationCall: LLMGenerationCall, llmMultipleGenerationCall: LLMMultipleGenerationCall, intitialInstruction?: string) => void) => {
   let generatedTextIndex = 0
 
   const getGeneratedTextLabel = () => `Generated text (${generatedTextIndex + 1} / ${generatedTexts.length})`
@@ -23,6 +24,11 @@ export const openReviewDialog = (editor: Editor, oldDialogApi: Dialog.DialogInst
   }
 
   const onAction = async (dialogApi: Dialog.DialogInstanceApi<typeof initialData>, details: Dialog.DialogActionDetails) => {
+    if (details.name === 'back') {
+      dialogApi.close()
+      openChatDialog(editor, llmGenerationCall, llmMultipleGenerationCall, generationInput.instruction)
+    }
+
     if (details.name === 'previousGeneration') {
       generatedTextIndex -= 1
     } else if (details.name === 'nextGeneration') {
@@ -52,23 +58,33 @@ export const openReviewDialog = (editor: Editor, oldDialogApi: Dialog.DialogInst
           type: 'textarea',
           name: 'generatedText',
           label: getGeneratedTextLabel()
+        },
+        {
+          type: 'bar',
+          items: [
+            {
+              type: 'button',
+              name: 'previousGeneration',
+              icon: 'arrow-left',
+              text: 'see previous generation',
+              enabled: false
+            },
+            {
+              type: 'button',
+              name: 'nextGeneration',
+              text: 'see next generation',
+              icon: 'arrow-right'
+            }
+          ]
         }
       ]
     },
-    initialData,
     buttons: [
       {
         type: 'custom',
-        name: 'previousGeneration',
-        icon: 'arrow-left',
-        text: 'see previous generation',
-        enabled: false
-      },
-      {
-        type: 'custom',
-        name: 'nextGeneration',
-        text: 'see next generation',
-        icon: 'arrow-right'
+        name: 'back',
+        text: 'Back',
+        buttonType: 'secondary'
       },
       {
         type: 'submit',
@@ -76,6 +92,7 @@ export const openReviewDialog = (editor: Editor, oldDialogApi: Dialog.DialogInst
         buttonType: 'primary'
       }
     ],
+    initialData,
     onSubmit,
     onAction
   })

@@ -19,7 +19,7 @@ const CONTEXT_LENGTH = { short: 166, medium: 250, long: 400, all: 100_000 } as c
 
 const { markdown2html, html2markdown } = useConverters()
 
-export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationCall, llmMultipleGenerationCall: LLMMultipleGenerationCall) => {
+export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationCall, llmMultipleGenerationCall: LLMMultipleGenerationCall, intitialInstruction: string = '') => {
   const range = editor.selection.getRng()
   const beforeRange = range.cloneRange()
   const afterRange = range.cloneRange()
@@ -43,19 +43,21 @@ export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationC
   const getContexts = (contextLength: ContextLength) => {
     const length = CONTEXT_LENGTH[contextLength]
     return {
-      contextBefore: markdown2html(beforeText).substring(beforeText.length - length + 1),
-      contextAfter: markdown2html(afterText).substring(0, length)
+      contextBefore: beforeText.substring(beforeText.length - length + 1),
+      contextAfter: afterText.substring(0, length)
     }
   }
 
   const getSourceViewHtml = (showContext: boolean, contextLength: ContextLength) => {
     const contextDisplayValue = showContext ? 'block' : 'none'
-    const { contextBefore, contextAfter } = getContexts(contextLength)
+    let { contextBefore, contextAfter } = getContexts(contextLength)
+    contextBefore = markdown2html(contextBefore)
+    contextAfter = markdown2html(contextAfter)
     return `<div class="source-view" style="max-height: 350px; overflow: scroll; border-radius: 6px; border: 1px solid #eee; padding: 10px; margin-bottom: 6px; margin-top: 6px;"><div class="source-view-context" style="border-bottom: 1px solid #000; margin-bottom: 10px; display: ${contextDisplayValue};">${contextBefore}</div><span style="background-color: #FFD700;">${targetText}</span><div class="source-view-context" style="border-top: 1px solid #000; margin-top: 10px; padding-top: 10px; display: ${contextDisplayValue};">${contextAfter}</div></div>`
   }
 
   const initialData = {
-    instruction: '',
+    instruction: intitialInstruction,
     showContext: false,
     numGenerations: '1',
     contextLength: 'short'
@@ -84,11 +86,15 @@ export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationC
     const { instruction, contextLength, numGenerations } = dialogApi.getData()
     const { contextBefore, contextAfter } = getContexts(contextLength)
 
+    console.log({ instruction, contextBefore, targetText, contextAfter })
+
     dialogApi.block('Generating ...')
     const generatedTexts = await llmMultipleGenerationCall({ instruction, contextBefore, targetText, contextAfter }, parseInt(numGenerations || '1'))
     dialogApi.unblock()
 
-    openReviewDialog(editor, dialogApi as any, { instruction, contextBefore, targetText, contextAfter }, generatedTexts, llmGenerationCall)
+    console.log({ generatedTexts })
+
+    openReviewDialog(editor, dialogApi as any, { instruction, contextBefore, targetText, contextAfter }, generatedTexts, llmGenerationCall, llmMultipleGenerationCall, openChatDialog)
   }
 
   editor.windowManager.open({
