@@ -5,7 +5,7 @@ import { ChatPromptTemplate, HumanMessagePromptTemplate, PromptTemplate } from '
 
 const { openaiApiKey } = useRuntimeConfig()
 
-const systemMessage = new AIMessage(
+const systemMessageEn = new AIMessage(
   [
     'You are my helpful personal editing assistant that is creative. I\'m editing texts in either English or German.',
     'To collaborate optimally we have established the following workflow:',
@@ -19,6 +19,20 @@ const systemMessage = new AIMessage(
   ].join('\n')
 )
 
+const systemMessageDe = new AIMessage(
+  [
+    'Du bist mein hilfreicher persönlicher Bearbeitungsassistent, der kreativ ist. Ich bearbeite Texte in Englisch oder Deutsch.',
+    'Um optimal zusammenzuarbeiten, haben wir den folgenden Arbeitsablauf festgelegt:',
+    ' - Ich werde einen Textabschnitt hervorheben',
+    ' - Ich werde einen Kommentar oder eine Anweisung zu diesem Text schreiben',
+    ' - Dir wird der exakte Textabschnitt, den ich hervorgehoben habe, mein Kommentar bzw. meine Anweisung sowie der Kontext vor und nach dem hervorgehobenen Text zur Verfügung gestellt. Der Kontext kann sich etwas mit dem hervorgehobenen Text überschneiden, um nicht mitten in einer Zeile zu enden.',
+    ' - Du wirst mit einer geänderten Version des hervorgehobenen Textes antworten. Du darfst keinen Text ändern, der nicht hervorgehoben ist, oder etwas anderes liefern. Du musst die komplette Version des geänderten Textes liefern.',
+    ' - Alles, was du von mir erhältst, wird im Markdown-Format formatiert sein. Antworte immer im gleichen Format.',
+    ' - Die letzten beiden Anforderungen sind kritisch, um eine effiziente Zusammenarbeit zu erreichen. Deine Antwort wird den ursprünglich hervorgehobenen Text ersetzen und das Nichtbefolgen dieser Regeln wird zu schwerwiegenden Bearbeitungsfehlern führen.',
+    ' - Ich werde dich oft bitten, etwas umzuformulieren, zusammenzufassen oder zu ergänzen, also interpretiere meinen Kommentar in diesem Kontext'
+  ].join('\n')
+)
+
 const createHumanKeyValueTemplate = (title: string, inputVariableName: string) => {
   const promptTemplate = new PromptTemplate({
     template: `## ${title}\n\n{${inputVariableName}}`,
@@ -28,8 +42,8 @@ const createHumanKeyValueTemplate = (title: string, inputVariableName: string) =
   return new HumanMessagePromptTemplate({ prompt: promptTemplate })
 }
 
-const chatPrompt = ChatPromptTemplate.fromMessages([
-  systemMessage,
+const chatPromptEn = ChatPromptTemplate.fromMessages([
+  systemMessageEn,
   createHumanKeyValueTemplate('Instruction or comment', 'instruction'),
   createHumanKeyValueTemplate('Context before highlighted text', 'contextBefore'),
   createHumanKeyValueTemplate('Highlighted text', 'targetText'),
@@ -37,9 +51,32 @@ const chatPrompt = ChatPromptTemplate.fromMessages([
   createHumanKeyValueTemplate('Restatement of my instruction or comment', 'instruction')
 ])
 
-const llm = new ChatOpenAI({
+const chatPromptDe = ChatPromptTemplate.fromMessages([
+  systemMessageDe,
+  createHumanKeyValueTemplate('Anweisung oder Kommentar', 'instruction'),
+  createHumanKeyValueTemplate('Kontext vor dem hervorgehobenen Text', 'contextBefore'),
+  createHumanKeyValueTemplate('Hervorgehobener Text', 'targetText'),
+  createHumanKeyValueTemplate('Kontext nach dem hervorgehobenen Text', 'contextAfter'),
+  createHumanKeyValueTemplate('Wiederholung meiner Anweisung oder meines Kommentars', 'instruction')
+])
+
+const chatgpt3dot5turbo = new ChatOpenAI({
   openAIApiKey: openaiApiKey,
   modelName: 'gpt-3.5-turbo'
 })
 
-export const chain = new LLMChain({ llm, prompt: chatPrompt })
+const chatgpt4 = new ChatOpenAI({
+  openAIApiKey: openaiApiKey,
+  modelName: 'gpt-4'
+})
+
+export const chains = {
+  de: {
+    'gpt-3.5-turbo': new LLMChain({ llm: chatgpt3dot5turbo, prompt: chatPromptDe }),
+    'gpt-4': new LLMChain({ llm: chatgpt4, prompt: chatPromptDe })
+  },
+  en: {
+    'gpt-3.5-turbo': new LLMChain({ llm: chatgpt3dot5turbo, prompt: chatPromptEn }),
+    'gpt-4': new LLMChain({ llm: chatgpt4, prompt: chatPromptEn })
+  }
+}

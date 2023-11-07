@@ -13,6 +13,8 @@ type DialogData = {
   showContext: boolean,
   numGenerations: string,
   contextLength: ContextLength,
+  language: 'de' | 'en',
+  model: 'gpt-3.5-turbo' | 'gtp-4',
 }
 
 const CONTEXT_LENGTH = { short: 166, medium: 250, long: 400, all: 100_000 } as const
@@ -60,7 +62,9 @@ export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationC
     instruction: intitialInstruction,
     showContext: false,
     numGenerations: '1',
-    contextLength: 'short'
+    contextLength: 'short',
+    model: 'gpt-4',
+    language: 'en'
   } satisfies DialogData
 
   const onChange = (dialogApi: Dialog.DialogInstanceApi<typeof initialData>, details: Dialog.DialogActionDetails) => {
@@ -83,18 +87,14 @@ export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationC
   }
 
   const onSubmit = async (dialogApi: Dialog.DialogInstanceApi<typeof initialData>) => {
-    const { instruction, contextLength, numGenerations } = dialogApi.getData()
+    const { instruction, contextLength, numGenerations, language, model } = dialogApi.getData()
     const { contextBefore, contextAfter } = getContexts(contextLength)
 
-    console.log({ instruction, contextBefore, targetText, contextAfter })
-
     dialogApi.block('Generating ...')
-    const generatedTexts = await llmMultipleGenerationCall({ instruction, contextBefore, targetText, contextAfter }, parseInt(numGenerations || '1'))
+    const generatedTexts = await llmMultipleGenerationCall({ instruction, contextBefore, targetText, contextAfter, language, model }, parseInt(numGenerations || '1'))
     dialogApi.unblock()
 
-    console.log({ generatedTexts })
-
-    openReviewDialog(editor, dialogApi as any, { instruction, contextBefore, targetText, contextAfter }, generatedTexts, llmGenerationCall, llmMultipleGenerationCall, openChatDialog)
+    openReviewDialog(editor, dialogApi as any, { instruction, contextBefore, targetText, contextAfter, language, model }, generatedTexts, llmGenerationCall, llmMultipleGenerationCall, openChatDialog)
   }
 
   editor.windowManager.open({
@@ -111,6 +111,10 @@ export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationC
           html: getSourceViewHtml(initialData.showContext, initialData.contextLength)
         },
         {
+          type: 'htmlpanel',
+          html: '<br>'
+        },
+        {
           type: 'bar',
           items: [
             {
@@ -120,6 +124,29 @@ export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationC
               placeholder: '1',
               inputMode: 'numeric'
             },
+            {
+              type: 'selectbox',
+              name: 'language',
+              label: 'Language',
+              items: [
+                { value: 'en', text: '🇺🇸 English' },
+                { value: 'de', text: '🇩🇪 German' }
+              ]
+            },
+            {
+              type: 'selectbox',
+              name: 'model',
+              label: 'Model',
+              items: [
+                { value: 'gpt-3.5-turbo', text: 'GPT-3.5' },
+                { value: 'gpt-4', text: 'GPT-4' }
+              ]
+            }
+          ]
+        },
+        {
+          type: 'bar',
+          items: [
             {
               type: 'selectbox',
               name: 'contextLength',
@@ -138,6 +165,10 @@ export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationC
               label: 'Show context'
             }
           ]
+        },
+        {
+          type: 'htmlpanel',
+          html: '<br>'
         },
         {
           type: 'textarea',

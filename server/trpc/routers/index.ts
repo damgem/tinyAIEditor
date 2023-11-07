@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { publicProcedure, router } from '../trpc'
 
-import { chain } from '~/server/llm/chains'
+import { chains } from '~/server/llm/chains'
 
 const { password } = useRuntimeConfig()
 
@@ -13,7 +13,9 @@ export const appRouter = router({
           instruction: z.string(),
           contextBefore: z.string(),
           targetText: z.string(),
-          contextAfter: z.string()
+          contextAfter: z.string(),
+          language: z.literal('de').or(z.literal('en')),
+          model: z.literal('gpt-3.5-turbo').or(z.literal('gpt-4'))
         }),
         password: z.string()
       })
@@ -24,7 +26,13 @@ export const appRouter = router({
           return 'ERROR: THE PASSWORD IS WRONG'
         }
 
-        const result = await chain.call(input.data)
+        const result = await chains[input.data.language][input.data.model].call({
+          instruction: input.data.instruction,
+          contextBefore: input.data.contextBefore,
+          targetText: input.data.targetText,
+          contextAfter: input.data.contextAfter
+        })
+
         const resultText = result.text as string
         return resultText.split('\n').slice(2).join('\n')
       }
@@ -36,7 +44,9 @@ export const appRouter = router({
           instruction: z.string(),
           contextBefore: z.string(),
           targetText: z.string(),
-          contextAfter: z.string()
+          contextAfter: z.string(),
+          language: z.literal('de').or(z.literal('en')),
+          model: z.literal('gpt-3.5-turbo').or(z.literal('gpt-4'))
         }),
         numGenerations: z.number().positive(),
         password: z.string()
@@ -50,11 +60,22 @@ export const appRouter = router({
 
         const promises = []
         for (let i = 0; i < input.numGenerations; i += 1) {
-          promises.push(chain.call(input.data))
+          promises.push(chains[input.data.language][input.data.model].call({
+            instruction: input.data.instruction,
+            contextBefore: input.data.contextBefore,
+            targetText: input.data.targetText,
+            contextAfter: input.data.contextAfter
+          }))
         }
 
         const results = await Promise.all(promises)
-        const resultTexts = results.map(result => (result.text as string).split('\n').slice(2).join('\n'))
+        const resultTexts = results.map((result) => {
+          const text = result.text as string
+          if (text.trim().startsWith('#')) {
+            return text.split('\n').slice(2).join('\n')
+          }
+          return text
+        })
         return resultTexts
       }
     )
