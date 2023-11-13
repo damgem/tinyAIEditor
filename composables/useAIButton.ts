@@ -1,10 +1,9 @@
 import { openChatDialog } from './useChatDialog'
-import type { LLMGenerationCall, LLMMultipleGenerationCall } from './useChatDialog'
 import type { Editor } from '~/types'
 
-export const useAiButton = (llmGenerationCall: LLMGenerationCall, llmMultipleGenerationCall: LLMMultipleGenerationCall) => {
+export const useAiButton = () => {
   const aiButton = function (editor: Editor) {
-    const onAction = () => openChatDialog(editor, llmGenerationCall, llmMultipleGenerationCall)
+    const onAction = () => openChatDialog(editor)
 
     editor.ui.registry.addButton('AIButton', {
       text: 'Editor',

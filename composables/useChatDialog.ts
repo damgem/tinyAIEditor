@@ -1,11 +1,9 @@
 import type { Dialog } from '@ephox/bridge'
 import { openReviewDialog } from './useReviewDialog'
-import type { Editor, GenerationInputData } from '~/types'
+import type { Editor } from '~/types'
 import { getHtmlFromRange, getSmallestContainingBlockNode } from '~/helpers/editorUtils'
 import { ensureAllTextareasHaveDynamicHeight, focusFirstTextarea } from '~/helpers/domUtils'
-
-export type LLMGenerationCall = (params: GenerationInputData) => Promise<string>
-export type LLMMultipleGenerationCall = (params: GenerationInputData, numGenerations: number) => Promise<string[]>
+import type { GenerationInput } from '~/schemas'
 
 type ContextLength = 'short' | 'medium' | 'long' | 'all'
 type DialogData = {
@@ -14,14 +12,14 @@ type DialogData = {
   numGenerations: string,
   contextLength: ContextLength,
   language: 'de' | 'en',
-  model: 'gpt-3.5-turbo' | 'gtp-4',
+  model: 'gpt-3.5-turbo' | 'gpt-4',
 }
 
 const CONTEXT_LENGTH = { short: 166, medium: 250, long: 400, all: 100_000 } as const
 
 const { markdown2html, html2markdown } = useConverters()
 
-export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationCall, llmMultipleGenerationCall: LLMMultipleGenerationCall, intitialInstruction: string = '') => {
+export const openChatDialog = (editor: Editor, intitialInstruction: string = '') => {
   const range = editor.selection.getRng()
   const beforeRange = range.cloneRange()
   const afterRange = range.cloneRange()
@@ -86,15 +84,19 @@ export const openChatDialog = (editor: Editor, llmGenerationCall: LLMGenerationC
     }
   }
 
-  const onSubmit = async (dialogApi: Dialog.DialogInstanceApi<typeof initialData>) => {
-    const { instruction, contextLength, numGenerations, language, model } = dialogApi.getData()
+  const onSubmit = (dialogApi: Dialog.DialogInstanceApi<typeof initialData>) => {
+    const { instruction, contextLength, numGenerations: numGenerationsStr, language, model } = dialogApi.getData()
     const { contextBefore, contextAfter } = getContexts(contextLength)
 
-    dialogApi.block('Generating ...')
-    const generatedTexts = await llmMultipleGenerationCall({ instruction, contextBefore, targetText, contextAfter, language, model }, parseInt(numGenerations || '1'))
-    dialogApi.unblock()
+    const numGenerations = parseInt(numGenerationsStr || '1')
 
-    openReviewDialog(editor, dialogApi as any, { instruction, contextBefore, targetText, contextAfter, language, model }, generatedTexts, llmGenerationCall, llmMultipleGenerationCall, openChatDialog)
+    const generationInput: Omit<GenerationInput, 'password'> = {
+      data: { instruction, contextBefore, contextAfter, targetText },
+      options: { language, model, numGenerations }
+    }
+
+    dialogApi.close()
+    openReviewDialog(editor, generationInput, openChatDialog)
   }
 
   editor.windowManager.open({

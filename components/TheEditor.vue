@@ -1,16 +1,9 @@
 <script setup lang="ts">
 import Editor from '@tinymce/tinymce-vue'
 
-const { tinymceApiKey } = useRuntimeConfig().public
-const { getPassword } = usePassword()
-const { $client } = useNuxtApp()
-
-const aiButton = useAiButton(
-  data => $client.generate.query({ data, password: getPassword() }),
-  (data, numGenerations: number) => $client.generateMultiple.query({ data, numGenerations, password: getPassword() })
-)
-
+const aiButton = useAiButton()
 const { markdown2html } = useConverters()
+const { tinymceApiKey } = useRuntimeConfig().public
 
 const config = {
   height: '700',

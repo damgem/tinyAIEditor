@@ -1,7 +1,8 @@
 import { ChatOpenAI } from 'langchain/chat_models/openai'
 import { AIMessage } from 'langchain/schema'
-import { LLMChain } from 'langchain/chains'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, PromptTemplate } from 'langchain/prompts'
+import type { GenerationInput } from '~/schemas'
+// import { LLMChain } from 'langchain/chains'
 
 const { openaiApiKey } = useRuntimeConfig()
 
@@ -62,21 +63,20 @@ const chatPromptDe = ChatPromptTemplate.fromMessages([
 
 const chatgpt3dot5turbo = new ChatOpenAI({
   openAIApiKey: openaiApiKey,
-  modelName: 'gpt-3.5-turbo'
+  modelName: 'gpt-3.5-turbo',
+  streaming: true
 })
 
-const chatgpt4 = new ChatOpenAI({
+export const chatgpt4 = new ChatOpenAI({
   openAIApiKey: openaiApiKey,
-  modelName: 'gpt-4'
+  modelName: 'gpt-4',
+  streaming: true
 })
 
-export const chains = {
-  de: {
-    'gpt-3.5-turbo': new LLMChain({ llm: chatgpt3dot5turbo, prompt: chatPromptDe }),
-    'gpt-4': new LLMChain({ llm: chatgpt4, prompt: chatPromptDe })
-  },
-  en: {
-    'gpt-3.5-turbo': new LLMChain({ llm: chatgpt3dot5turbo, prompt: chatPromptEn }),
-    'gpt-4': new LLMChain({ llm: chatgpt4, prompt: chatPromptEn })
-  }
+export const streamChain = async (model: 'gpt-3.5-turbo' | 'gpt-4', language: 'de' | 'en', inputData: GenerationInput['data']) => {
+  const chatPrompt = language === 'de' ? chatPromptDe : chatPromptEn
+  const llm = model === 'gpt-4' ? chatgpt4 : chatgpt3dot5turbo
+
+  const messages = await chatPrompt.format(inputData)
+  return llm.stream(messages)
 }
