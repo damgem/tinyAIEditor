@@ -18,5 +18,12 @@ export default defineNuxtConfig({
   },
   typescript: {
     shim: false
+  },
+  tailwindcss: {
+    config: {
+      corePlugins: {
+        preflight: false
+      }
+    }
   }
 })

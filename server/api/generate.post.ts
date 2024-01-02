@@ -3,10 +3,10 @@ import { GenerateInputSchema } from '~/schemas'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { data, options: { language, model }, password } = GenerateInputSchema.parse(body)
+  const { data, options: { language, model }, password: deliveredPassword } = GenerateInputSchema.parse(body)
+  const { password } = useRuntimeConfig()
 
-  const { password: correctPassword } = useRuntimeConfig()
-  if (password !== correctPassword) {
+  if (deliveredPassword !== password) {
     createError('Password is incorrect!')
   }
 
@@ -23,16 +23,11 @@ export default defineEventHandler(async (event) => {
       const stream = await streamChain(model, language, data)
       const uint8Stream = stream.pipeThrough(textExtractStream).pipeThrough(new TextEncoderStream())
       reader = uint8Stream.getReader()
-
       controller.enqueue('|'.repeat(1000))
     },
     pull: async (controller) => {
       const { done, value } = await reader!.read()
-      if (done) {
-        controller.close()
-        return
-      }
-      controller.enqueue(value)
+      done ? controller.close() : controller.enqueue(value)
     }
   })
 

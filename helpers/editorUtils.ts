@@ -7,8 +7,36 @@ export const getSmallestContainingBlockNode = (node: Node, editor: Editor) => {
   return node
 }
 
+const removeAnnotationSpans = (node: Node) => {
+  if (!node.childNodes) {
+    return
+  }
+
+  const childNodes = Array.from(node.childNodes)
+
+  childNodes.forEach((child) => {
+    if (child instanceof HTMLElement && child.tagName === 'SPAN' && child.classList.contains('test')) {
+      while (child.firstChild) {
+        node.insertBefore(child.firstChild, child)
+      }
+
+      node.removeChild(child)
+    } else {
+      removeAnnotationSpans(child)
+    }
+  })
+}
+
 export const getHtmlFromRange = (range: Range) => {
   const div = document.createElement('div')
-  div.appendChild(range.cloneContents())
+  const documentFragment = range.cloneContents()
+
+  console.log(documentFragment)
+
+  documentFragment.childNodes.forEach((child) => {
+    // removeAnnotationSpans(child)
+    div.appendChild(child)
+  })
+
   return div.innerHTML
 }

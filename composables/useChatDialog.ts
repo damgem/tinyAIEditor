@@ -95,6 +95,9 @@ export const openChatDialog = (editor: Editor, intitialInstruction: string = '')
       options: { language, model, numGenerations }
     }
 
+    const giState = useState<Omit<GenerationInput, 'password'>>('generationInput')
+    giState.value = generationInput
+
     dialogApi.close()
     openReviewDialog(editor, generationInput, openChatDialog)
   }
