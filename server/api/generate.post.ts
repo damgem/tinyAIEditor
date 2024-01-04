@@ -3,12 +3,7 @@ import { GenerateInputSchema } from '~/schemas'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { data, options: { language, model }, password: deliveredPassword } = GenerateInputSchema.parse(body)
-  const { password } = useRuntimeConfig()
-
-  if (deliveredPassword !== password) {
-    createError('Password is incorrect!')
-  }
+  const { data, options: { language, model } } = GenerateInputSchema.parse(body)
 
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
 

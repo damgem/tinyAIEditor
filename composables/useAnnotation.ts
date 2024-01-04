@@ -1,4 +1,3 @@
-import { useEditor } from './useEditor'
 import { getHtmlFromRange, getSmallestContainingBlockNode } from '~/helpers/editorUtils'
 import type { Editor, Range } from '~/types'
 

@@ -1,14 +1,12 @@
 import type { GenerationInput } from '~/schemas'
 
-const { getPassword } = usePassword()
-
-export const useGenerate = async (generationInput: Omit<GenerationInput, 'password'>) => {
+export const useGenerate = async (generationInput: GenerationInput) => {
   const { body } = await fetch('/api/generate', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ ...generationInput, password: getPassword() })
+    body: JSON.stringify(generationInput)
   })
 
   if (!body) { throw new Error('Unknown error') }

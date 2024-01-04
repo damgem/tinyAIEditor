@@ -17,10 +17,9 @@ const onComment = async () => {
     data: { ...data.value, instruction: lastMessage.value.content },
     options: {
       model: 'gpt-4',
-      language: 'en',
-      numGenerations: 1
+      language: 'en'
     }
-  } satisfies Omit<GenerationInput, 'password'>
+  } satisfies GenerationInput
 
   messages.value.push({ type: 'ai', content: '' })
 

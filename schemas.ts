@@ -9,10 +9,8 @@ export const GenerateInputSchema = z.object({
   }),
   options: z.object({
     model: z.literal('gpt-3.5-turbo').or(z.literal('gpt-4')),
-    language: z.literal('de').or(z.literal('en')),
-    numGenerations: z.number().positive().optional().default(1)
-  }),
-  password: z.string()
+    language: z.literal('de').or(z.literal('en'))
+  })
 })
 
 export type GenerationInput = z.infer<typeof GenerateInputSchema>

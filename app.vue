@@ -3,13 +3,6 @@ useHead({
   title: 'TinyAIEditor'
 })
 
-const { setPassword, getPassword } = usePassword()
-const password = ref('')
-
-onMounted(() => {
-  password.value = getPassword()
-  watchEffect(() => setPassword(password.value), {})
-})
 </script>
 <template>
   <div>
@@ -18,10 +11,6 @@ onMounted(() => {
     </h1>
     <div class="m-4">
       <TheEditor />
-    </div>
-    <div class="absolute top-2 right-2">
-      <label class="mr-4">Password:</label>
-      <input v-model="password" placeholder="Enter password here...">
     </div>
   </div>
 </template>
