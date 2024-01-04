@@ -27,7 +27,7 @@ const currentChatId = useState<string | null>('currentChatId', () => null)
       :api-key="tinymceApiKey"
       :initial-value="initialValue"
       plugins="wordcount ai lists"
-      toolbar="undo redo | blocks | bold italic | aiButton | numlist bullist | outdent indent"
+      toolbar="undo redo | blocks bold italic | numlist bullist outdent indent | aiButton |"
       :init="config"
     />
     <AiChat v-if="currentChatId" :chat-id="currentChatId" class="ml-2 w-96" />

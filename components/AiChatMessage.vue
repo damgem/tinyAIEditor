@@ -26,7 +26,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="message.type === 'ai'" class="border border-solid border-gray-300 rounded-t-lg p-3 mt-2">
+  <div v-if="message.type === 'ai'" class="border border-solid border-gray-300 rounded-t-lg px-3 mt-2">
     <Editor
       v-model="message.content"
       :inline="true"
@@ -38,8 +38,8 @@ onMounted(() => {
     <n-button class="w-full border-x border-y-0 border-solid border-gray-300 rounded-none" :bordered="false" @click="() => emit('accept')">
       Accept
     </n-button>
-    <div class="border border-solid border-gray-300 rounded-b-lg">
-      <div v-if="editable" class="p-3 flex items-center justify-between">
+    <div class="border border-solid border-gray-300 rounded-b-lg px-3">
+      <div v-if="editable" class="py-3 flex items-center justify-between">
         <n-input
           v-model:value="message.content"
           type="textarea"
@@ -66,7 +66,12 @@ onMounted(() => {
         </n-button>
       </div>
       <p v-else>
-        {{ message.content }}
+        <Editor
+          v-model="message.content"
+          :inline="true"
+          :init="{statusbar: false, menubar: false, toolbar: false}"
+          :disabled="true"
+        />
       </p>
     </div>
   </template>

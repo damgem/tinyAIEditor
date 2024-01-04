@@ -32,6 +32,12 @@ const aiButton = function (editor: Editor) {
   })
 
   editor.addShortcut('meta+e', 'Annotate', onAnnotate)
+
+  editor.ui.registry.addButton('AIButton', {
+    text: 'Comment (⌘ + e)',
+    icon: 'ai',
+    onAction: onAnnotate
+  })
 }
 
 export const useAiButton = () => aiButton
