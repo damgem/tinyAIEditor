@@ -39,5 +39,7 @@ ENV DATABASE_URL=file:./db.sqlite
 # Run in production mode
 ENV NODE_ENV=production
 
+ENV PORT=8501
+
 # start the app
 CMD [ "node", "/app/.output/server/index.mjs" ]
